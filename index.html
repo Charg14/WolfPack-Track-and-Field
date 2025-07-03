@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WolfPack Track and Field</title>
+    <!-- Chosen Palette: Ridgeview High School (Purple, Vegas Gold, Black) with Image Background -->
+    <!-- Application Structure Plan: A single-page application with a fixed sidebar navigation for easy access to each event group (Sprinters, Jumpers, Distance, Throwers, Hurdlers), Recruiting Standards, a detailed Warm-Up section, a comprehensive Nutrition Plan, and the new Event Time Improvement Tracker. This structure was chosen for its intuitive, at-a- glance navigation, allowing athletes and coaches to quickly jump to relevant sections without scrolling through unrelated content. Each event group and the Nutrition Plan section are self-contained modules with tabbed navigation for different training phases or nutritional aspects, making the dense, year-round plan digestible. This user-flow is designed for targeted information retrieval, which is crucial for a detailed training resource. -->
+    <!-- Visualization & Content Choices: The core of this application is structured textual content, presented in a clear, hierarchical manner using cards and tabs. The "Recruiting Standards" section uses interactive tabs for different divisions (D1, D2, D3), which dynamically display data in clean HTML tables. This is more effective than a static chart for comparing multiple events and genders. The primary interaction is the tab-based navigation within each module, powered by simple JavaScript. This choice avoids visual clutter and lets the user focus on one phase at a time, which is key for a long-term plan. The "Warm-Up" section uses an interactive list with external links to video demonstrations, a direct and practical way to provide instructional content without embedding heavy media. The event group sections include a toggle to switch between bodyweight and weights-based workout regimens for each phase. The Nutrition Plan section also uses tabs to organize information by training phase and specific meal types (pre-meet, snacks), providing comprehensive guidance. The new Event Time Tracker section uses input fields and buttons for interactive calculations. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000; /* Fallback black background */
+            background-image: url('Screenshot 2025-05-12 at 11.05.49.png-fdd6eb5b-0c92-4201-bd1c-39dc4b9c8fa3'); /* Image background */
+            background-size: cover; /* Cover the entire viewport */
+            background-attachment: fixed; /* Keep background fixed while scrolling */
+            background-repeat: no-repeat; /* Do not repeat the image */
+            background-position: center center; /* Center the image */
+            color: #E0E0E0; /* Light Gray for general text on black */
+        }
+        .main-content {
+            transition: all 0.3s ease-in-out;
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link.active {
+            background-color: #6A0DAD; /* Primary Purple */
+            color: #C5B358; /* Vegas Gold */
+            font-weight: 600;
+        }
+        .tab.active {
+            border-bottom-color: #6A0DAD; /* Primary Purple */
+            color: #6A0DAD; /* Primary Purple */
+            font-weight: 600;
+        }
+        .regimen-toggle-btn {
+            background-color: #C5B358; /* Vegas Gold */
+            color: #6A0DAD; /* Primary Purple */
+            border: 1px solid #B8A04D; /* Slightly darker gold border */
+        }
+        .regimen-toggle-btn.active {
+            background-color: #6A0DAD; /* Primary Purple */
+            color: #C5B358; /* Vegas Gold */
+        }
+        .table-header {
+            background-color: #28064A; /* Darker Purple for table headers */
+            color: #E0E0E0; /* Light text on dark header */
+        }
+        .phase-card {
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black for card background */
+            border: 1px solid #333333; /* Darker gray border */
+            color: #E0E0E0; /* Light text on dark card */
+        }
+        .warm-up-link {
+            color: #6A0DAD; /* Primary Purple */
+            text-decoration: underline;
+        }
+        /* Adjusting text color for specific elements within cards if needed */
+        .phase-card strong {
+            color: #C5B358; /* Vegas Gold for strong text inside cards */
+        }
+        .phase-card ul.list-disc li, .phase-card ul.list-circle li {
+            color: #E0E0E0; /* Ensure list items are readable */
+        }
+        .phase-card p {
+            color: #CCCCCC; /* Slightly lighter gray for paragraphs */
+        }
+        /* Sidebar background adjustment for readability */
+        #sidebar {
+            background-color: rgba(0, 0, 0, 0.9); /* More opaque black for sidebar */
+        }
+        /* Styles for the new Event Time Tracker section */
+        .tracker-container {
+            background-color: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .tracker-input, .tracker-select {
+            background-color: #333333;
+            border: 1px solid #555555;
+            color: #E0E0E0;
+        }
+        .tracker-button {
+            background-color: #6A0DAD;
+            color: #C5B358;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .tracker-button:hover {
+            background-color: #5A0CA0;
+        }
+        .tracker-result-box {
+            background-color: #28064A;
+            border: 1px solid #4A0DA0;
+        }
+        .tracker-suggestion-box {
+            background-color: #1A1A1A;
+            border: 1px solid #444444;
+        }
+        .tracker-text-gold {
+            color: #C5B358;
+        }
+        .tracker-text-purple {
+            color: #6A0DAD;
+        }
+    </style>
+</head>
+<body class="flex flex-col lg:flex-row">
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="w-full lg:w-64 lg:min-h-screen p-4 lg:p-6 shadow-lg z-20 border-r border-gray-700">
+        <div class="text-center lg:text-left">
+            <h1 class="text-2xl font-bold text-[#6A0DAD]">WolfPack Track and Field</h1>
+            <p class="text-sm text-gray-400 mb-6">A Year-Round Plan</p>
+        </div>
+        <ul>
+            <li><a href="#warm-up" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">Warm-Up Routine</a></li>
+            <li><a href="#recruiting-standards" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">Recruiting Standards</a></li>
+            <li><a href="#ncaa-eligibility" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">NCAA Eligibility</a></li>
+            <li><a href="#nutrition-plan" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🍎 Nutrition Plan</a></li>
+            <!-- Removed Event Points Calculator Link -->
+            <li><a href="#sprinters" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">⚡ Sprinters</a></li>
+            <li><a href="#jumpers" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🤸‍♀️ Jumpers</a></li>
+            <li><a href="#hurdlers" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🚧 Hurdlers</a></li>
+            <li><a href="#distance" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🏃‍♀️ Distance</a></li>
+            <li><a href="#throwers" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🏋️‍♂️ Throwers</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 p-6 lg:p-10 overflow-y-auto">
+
+        <!-- Warm-Up Section -->
+        <section id="warm-up" class="mb-12">
+            <h2 class="text-4xl font-bold mb-2 text-[#6A0DAD]">The Daily Warm-Up</h2>
+            <p class="text-lg text-gray-400 mb-6">This 15-20 minute routine is essential for injury prevention and performance. Complete it before every workout.</p>
+            <div class="phase-card rounded-xl p-6">
+                <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Dynamic Drills & Stretches</h3>
+                <p class="mb-4 text-gray-400">Perform each drill for 20-30 meters, focusing on perfect form. Click the links for a video reference.</p>
+                 <ul class="list-none space-y-3">
+                    <li><strong>Head Circles:</strong> <a href="https://www.youtube.com/watch?v=s3Qc3xYy2s8" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Arm Swings (Forward/Backward):</strong> <a href="https://www.youtube.com/watch?v=kDBcCt3Nq8g" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Trunk Circles:</strong> <a href="https://www.youtube.com/watch?v=y3X_iRqZz9M" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Leg Swings (Forward/Sideways):</strong> <a href="https://www.youtube.com/watch?v=63s_p_Ay6eQ" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Walking Lunges w/ Twist:</strong> <a href="https://www.youtube.com/watch?v=Z2n58m2i4yk" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>High Knees:</strong> <a href="https://www.youtube.com/watch?v=oD_A-3h_fJ4" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Butt Kicks:</strong> <a href="https://www.youtube.com/watch?v=Qh_QC_82-aA" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>A-Skips:</strong> <a href="https://www.youtube.com/watch?v=wbigQg_2g2Y" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>B-Skips:</strong> <a href="https://www.youtube.com/watch?v=9x38q_i2D9s" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>C-Skips:</strong> <a href="https://www.youtube.com/watch?v=11X0_7s2P2w" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Running High Knees:</strong> <a href="https://www.youtube.com/watch?v=2v-p5L_o_0w" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>High Skips:</strong> <a href="https://www.youtube.com/watch=v=k3d_F60_r_Q" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Running Bounds:</strong> <a href="https://www.youtube.com/watch?v=m2G-b1c4e7o" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Straight Leg Bound/Shuffle:</strong> <a href="https://www.youtube.com/watch?v=wP0oF2_e0_Q" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Fast Leg:</strong> <a href="https://www.youtube.com/watch?v=aG-Q5-g5fJk" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Quick Skips:</strong> <a href="https://www.youtube.com/watch?v=y3X_iRqZz9M" target="_blank" class="warm-up-link">Watch Video</a></li>
+                    <li><strong>Kairoke:</strong> <a href="https://www.youtube.com/watch?v=Z2n58m2i4yk" target="_blank" class="warm-up-link">Watch Video</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Recruiting Standards Section -->
+        <section id="recruiting-standards" class="mb-12">
+            <h2 class="text-4xl font-bold mb-2 text-[#6A0DAD]">College Recruiting Standards</h2>
+            <p class="text-lg text-gray-400 mb-6">These are general guidelines for high school athletes aiming to compete at various NCAA levels. Standards can vary by school and conference.</p>
+            <div class="phase-card rounded-xl p-6">
+                <div class="tabs border-b border-gray-700 mb-6">
+                    <button class="tab active py-2 px-4" onclick="showStandard('d1', this)">Division I</button>
+                    <button class="tab py-2 px-4" onclick="showStandard('d2', this)">Division II</button>
+                    <button class="tab py-2 px-4" onclick="showStandard('d3', this)">Division III</button>
+                </div>
+                <div id="d1" class="standard-table">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Division I Standards</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="p-3">Event</th>
+                                    <th class="p-3">Men</th>
+                                    <th class="p-3">Women</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">100m</td>
+                                    <td class="p-3">&lt; 10.70</td>
+                                    <td class="p-3">&lt; 12.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">200m</td>
+                                    <td class="p-3">&lt; 21.50</td>
+                                    <td class="p-3">&lt; 25.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">400m</td>
+                                    <td class="p-3">&lt; 48.50</td>
+                                    <td class="p-3">&lt; 56.50</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">110mH / 100mH</td>
+                                    <td class="p-3">&lt; 14.50</td>
+                                    <td class="p-3">&lt; 14.50</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">300mH (HS)</td>
+                                    <td class="p-3">&lt; 39.00</td>
+                                    <td class="p-3">&lt; 44.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">800m</td>
+                                    <td class="p-3">&lt; 1:56.00</td>
+                                    <td class="p-3">&lt; 2:15.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">1600m / Mile</td>
+                                    <td class="p-3">&lt; 4:15.00</td>
+                                    <td class="p-3">&lt; 5:00.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">3200m / 2 Mile</td>
+                                    <td class="p-3">&lt; 9:15.00</td>
+                                    <td class="p-3">&lt; 10:50.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Long Jump</td>
+                                    <td class="p-3">&gt; 23' 0"</td>
+                                    <td class="p-3">&gt; 18' 6"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Triple Jump</td>
+                                    <td class="p-3">&gt; 47' 0"</td>
+                                    <td class="p-3">&gt; 38' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">High Jump</td>
+                                    <td class="p-3">&gt; 6' 7"</td>
+                                    <td class="p-3">&gt; 5' 6"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Pole Vault</td>
+                                    <td class="p-3">&gt; 15' 6"</td>
+                                    <td class="p-3">&gt; 12' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Discus (HS)</td>
+                                    <td class="p-3">&gt; 170' 0"</td>
+                                    <td class="p-3">&gt; 130' 0"</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3">Shot Put (12lb/4kg)</td>
+                                    <td class="p-3">&gt; 57' 0"</td>
+                                    <td class="p-3">&gt; 43' 0"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="d2" class="standard-table hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Division II Standards</h3>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="p-3">Event</th>
+                                    <th class="p-3">Men</th>
+                                    <th class="p-3">Women</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">100m</td>
+                                    <td class="p-3">&lt; 11.00</td>
+                                    <td class="p-3">&lt; 12.40</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">200m</td>
+                                    <td class="p-3">&lt; 22.00</td>
+                                    <td class="p-3">&lt; 26.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">400m</td>
+                                    <td class="p-3">&lt; 50.00</td>
+                                    <td class="p-3">&lt; 58.50</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">110mH / 100mH</td>
+                                    <td class="p-3">&lt; 15.00</td>
+                                    <td class="p-3">&lt; 15.20</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">300mH (HS)</td>
+                                    <td class="p-3">&lt; 41.00</td>
+                                    <td class="p-3">&lt; 47.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">800m</td>
+                                    <td class="p-3">&lt; 2:00.00</td>
+                                    <td class="p-3">&lt; 2:22.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">1600m / Mile</td>
+                                    <td class="p-3">&lt; 4:30.00</td>
+                                    <td class="p-3">&lt; 5:15.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">3200m / 2 Mile</td>
+                                    <td class="p-3">&lt; 9:45.00</td>
+                                    <td class="p-3">&lt; 11:30.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Long Jump</td>
+                                    <td class="p-3">&gt; 21' 6"</td>
+                                    <td class="p-3">&gt; 17' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Triple Jump</td>
+                                    <td class="p-3">&gt; 44' 0"</td>
+                                    <td class="p-3">&gt; 35' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">High Jump</td>
+                                    <td class="p-3">&gt; 6' 2"</td>
+                                    <td class="p-3">&gt; 5' 2"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Pole Vault</td>
+                                    <td class="p-3">&gt; 13' 6"</td>
+                                    <td class="p-3">&gt; 10' 6"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Discus (HS)</td>
+                                    <td class="p-3">&gt; 140' 0"</td>
+                                    <td class="p-3">&gt; 110' 0"</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3">Shot Put (12lb/4kg)</td>
+                                    <td class="p-3">&gt; 48' 0"</td>
+                                    <td class="p-3">&gt; 38' 0"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="d3" class="standard-table hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Division III Standards</h3>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="p-3">Event</th>
+                                    <th class="p-3">Men</th>
+                                    <th class="p-3">Women</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">100m</td>
+                                    <td class="p-3">&lt; 11.30</td>
+                                    <td class="p-3">&lt; 12.90</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">200m</td>
+                                    <td class="p-3">&lt; 23.00</td>
+                                    <td class="p-3">&lt; 26.50</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">400m</td>
+                                    <td class="p-3">&lt; 51.50</td>
+                                    <td class="p-3">&lt; 60.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">110mH / 100mH</td>
+                                    <td class="p-3">&lt; 16.00</td>
+                                    <td class="p-3">&lt; 16.50</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">300mH (HS)</td>
+                                    <td class="p-3">&lt; 43.00</td>
+                                    <td class="p-3">&lt; 48.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">800m</td>
+                                    <td class="p-3">&lt; 2:03.00</td>
+                                    <td class="p-3">&lt; 2:28.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">1600m / Mile</td>
+                                    <td class="p-3">&lt; 4:35.00</td>
+                                    <td class="p-3">&lt; 5:30.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">3200m / 2 Mile</td>
+                                    <td class="p-3">&lt; 10:00.00</td>
+                                    <td class="p-3">&lt; 12:00.00</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Long Jump</td>
+                                    <td class="p-3">&gt; 20' 6"</td>
+                                    <td class="p-3">&gt; 16' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Triple Jump</td>
+                                    <td class="p-3">&gt; 42' 0"</td>
+                                    <td class="p-3">&gt; 33' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">High Jump</td>
+                                    <td class="p-3">&gt; 6' 0"</td>
+                                    <td class="p-3">&gt; 5' 0"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Pole Vault</td>
+                                    <td class="p-3">&gt; 12' 6"</td>
+                                    <td class="p-3">&gt; 9' 6"</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <td class="p-3">Discus (HS)</td>
+                                    <td class="p-3">&gt; 125' 0"</td>
+                                    <td class="p-3">&gt; 100' 0"</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3">Shot Put (12lb/4kg)</td>
+                                    <td class="p-3">&gt; 45' 0"</td>
+                                    <td class="p-3">&gt; 35' 0"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NCAA Eligibility Section -->
+        <section id="ncaa-eligibility" class="mb-12">
+            <h2 class="text-4xl font-bold mb-2 text-[#6A0DAD]">NCAA Eligibility Process</h2>
+            <p class="text-lg text-gray-400 mb-6">To compete in NCAA Division I or II athletics, you must meet academic standards and register with the NCAA Eligibility Center.</p>
+            <div class="phase-card rounded-xl p-6">
+                <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Key Steps for NCAA Eligibility</h3>
+                <ul class="list-decimal list-inside space-y-4 text-gray-300">
+                    <li>
+                        <strong>Register with the NCAA Eligibility Center:</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Create an account at <a href="https://web3.ncaaeligibilitycenter.org/login" target="_blank" class="warm-up-link">ncaaeligibilitycenter.org</a> during your sophomore year of high school. Choose between a "Certification Account" (for D1/D2 athletes) or a "Profile Page" (for D3 or undecided athletes).</p>
+                    </li>
+                    <li>
+                        <strong>Meet Core Course Requirements:</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Complete a specific number of NCAA-approved core courses in subjects like English, Math, Science, Social Science, and additional English/Math/Science or World Language. The exact number and distribution vary by division.</p>
+                        <ul class="list-disc list-inside ml-8 mt-2 text-gray-400">
+                            <li><strong>Division I:</strong> 16 core courses. 10 of these must be completed before your senior year, and 7 of those 10 must be in English, Math, or Natural/Physical Science.</li>
+                            <li><strong>Division II:</strong> 16 core courses.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Achieve Required GPA in Core Courses:</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Maintain a minimum GPA in your NCAA-approved core courses. This GPA is calculated on a 4.0 scale.</p>
+                        <ul class="list-disc list-inside ml-8 mt-2 text-gray-400">
+                            <li><strong>Division I:</strong> Minimum 2.3 GPA.</li>
+                            <li><strong>Division II:</strong> Minimum 2.2 GPA.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Submit Test Scores (SAT/ACT):</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Send your official SAT or ACT scores directly to the NCAA Eligibility Center using code 9999. Division I uses a sliding scale combining GPA and test scores (higher GPA requires lower test score, and vice versa). Division II requires a minimum SAT sum score or ACT sum score.</p>
+                    </li>
+                    <li>
+                        <strong>Request Final Amateurism Certification:</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Once you commit to an NCAA school, the school will request your final amateurism certification. You'll need to answer questions about your sports participation, financial aid, and any professional sports involvement.</p>
+                    </li>
+                    <li>
+                        <strong>Send Official Transcripts:</strong>
+                        <p class="ml-4 mt-1 text-gray-400">Ensure your high school counselor sends your official transcripts to the NCAA Eligibility Center after your junior year and again after graduation with proof of graduation.</p>
+                    </li>
+                </ul>
+                <p class="mt-6 text-gray-400"><strong>Important Note:</strong> Always check the most current requirements on the official NCAA Eligibility Center website, as rules can change. Work closely with your high school counselor and coaches to ensure you are on track.</p>
+            </div>
+        </section>
+
+        <!-- Nutrition Plan Section -->
+        <section id="nutrition-plan" class="mb-12">
+            <h2 class="text-4xl font-bold mb-2 text-[#6A0DAD]">🍎 Nutrition Plan for Athletes</h2>
+            <p class="text-lg text-gray-400 mb-6">Fueling your body properly is as crucial as your training. This plan provides guidelines for year-round nutrition, including in-season and pre-meet strategies.</p>
+            <div class="phase-card rounded-xl p-6">
+                <div class="tabs border-b border-gray-700 mb-6">
+                    <button class="tab active py-2 px-4" onclick="showNutritionPhase('year-round', this)">Year-Round Principles</button>
+                    <button class="tab py-2 px-4" onclick="showNutritionPhase('off-season-nut', this)">Off-Season</button>
+                    <button class="tab py-2 px-4" onclick="showNutritionPhase('in-season-nut', this)">In-Season</button>
+                    <button class="tab py-2 px-4" onclick="showNutritionPhase('pre-meet', this)">Pre-Meet Meals</button>
+                    <button class="tab py-2 px-4" onclick="showNutritionPhase('snacks', this)">Snacks for Athletes</button>
+                </div>
+                <div id="year-round" class="nutrition-content">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Year-Round Principles</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong>Balanced Macronutrients:</strong> Aim for 40-55% Carbohydrates, 25-35% Protein, and 15-30% Healthy Fats.</li>
+                        <li><strong>Hydration:</strong> Drink at least 1 gallon (approx. 4 liters) of water daily. Increase intake during and after workouts.</li>
+                        <li><strong>Consistent Fueling:</strong> Eat small meals or snacks every 2-3 hours to maintain energy levels and stable blood sugar. Never skip meals.</li>
+                        <li><strong>Whole Foods First:</strong> Prioritize fruits, vegetables, lean meats, whole grains, nuts, seeds, and low-fat dairy. Limit processed foods, excessive simple sugars, and unhealthy fats.</li>
+                        <li><strong>Post-Workout Recovery:</strong> Consume carbohydrates and protein within 30 minutes after exercise to replenish glycogen stores and aid muscle repair.</li>
+                        <li><strong>Listen to Your Body:</strong> Pay attention to how different foods affect your energy and digestion.</li>
+                    </ul>
+                </div>
+                <div id="off-season-nut" class="nutrition-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Off-Season Nutrition</h3>
+                    <p class="mb-4 text-gray-300">Focus on building a strong foundation, muscle growth, and recovery. Carbohydrate needs may be slightly lower than in-season, but remain crucial.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li>Maintain a balanced diet with adequate protein for muscle repair and growth.</li>
+                        <li>Continue consistent hydration.</li>
+                        <li>Experiment with new healthy foods to expand your diet.</li>
+                        <li>Ensure sufficient calorie intake to support training volume and recovery.</li>
+                    </ul>
+                </div>
+                <div id="in-season-nut" class="nutrition-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">In-Season Nutrition</h3>
+                    <p class="mb-4 text-gray-300">Focus shifts to fueling performance, rapid recovery between sessions/meets, and maintaining energy levels.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong>Higher Carbohydrate Intake:</strong> 5-7 grams of carbohydrates per kilogram of body weight per day (e.g., 375-525g for a 75kg/165lb athlete). This is your primary fuel.</li>
+                        <li><strong>Adequate Protein:</strong> 1.2-1.7 grams of protein per kilogram of body weight per day (e.g., 90-128g for a 75kg/165lb athlete), spread throughout the day.</li>
+                        <li><strong>Strategic Hydration:</strong> Carry a water bottle, drink consistently throughout the day, and use sports drinks for sessions longer than 1 hour or in hot/humid conditions.</li>
+                        <li><strong>Easy-to-Digest Foods:</strong> Especially around workouts and competitions, choose foods that you know your body tolerates well.</li>
+                    </ul>
+                </div>
+                <div id="pre-meet" class="nutrition-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Pre-Meet Meals & Snacks</h3>
+                    <p class="mb-4 text-gray-300">Proper fueling before a meet can significantly impact performance. Avoid trying new foods on meet day.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong>3-4 Hours Before:</strong> A balanced meal high in complex carbohydrates, moderate in lean protein, and low in fat and fiber.
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Examples: Pasta with light tomato sauce & lean ground turkey/chicken, grilled chicken with rice & steamed veggies, oatmeal with fruit & a small amount of nuts, turkey sandwich on whole-grain bread with fruit.</li>
+                            </ul>
+                        </li>
+                        <li><strong>1-2 Hours Before:</strong> Smaller, easily digestible snack, primarily carbohydrates.
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Examples: Banana with a small amount of nut butter, oatmeal, bagel with jam, plain granola bar (low sugar), fruit smoothie.</li>
+                            </ul>
+                        </li>
+                        <li><strong>30-60 Minutes Before:</strong> Quick, simple carbohydrates.
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Examples: Applesauce pouch, energy chews, handful of pretzels, fruit snacks, a few graham crackers.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Foods to Avoid:</strong> High-fat (fried foods, heavy sauces, greasy meats), high-fiber (beans, broccoli, large salads), and high-lactose foods (if sensitive) right before competition.</li>
+                    </ul>
+                </div>
+                <div id="snacks" class="nutrition-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">Healthy Snacks for Athletes</h3>
+                    <p class="mb-4 text-gray-300">Keep these handy for sustained energy and quick recovery throughout the day, especially between events.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong>Carbohydrate & Protein Combos:</strong>
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Greek yogurt with berries and granola</li>
+                                <li>Peanut butter and jelly sandwich (on whole wheat)</li>
+                                <li>Hard-boiled eggs with whole-grain crackers</li>
+                                <li>Cottole cheese with fruit (e.g., pineapple)</li>
+                                <li>Chocolate milk (excellent post-workout recovery)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Quick Carbs:</strong>
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Bananas, apples, oranges, grapes, dried fruit</li>
+                                <li>Pretzels</li>
+                                <li>Plain bagels or rice cakes</li>
+                            </ul>
+                        </li>
+                        <li><strong>Protein & Healthy Fats:</strong>
+                            <ul class="list-circle list-inside ml-4 mt-1">
+                                <li>Nuts and seeds (almonds, walnuts, chia seeds)</li>
+                                <li>Hummus with veggie sticks or whole-grain crackers</li>
+                                <li>Edamame</li>
+                                <li>Trail mix (nuts, seeds, dried fruit, minimal chocolate chips)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Portable Options:</strong> Granola bars (check sugar content), protein bars (whole food based), fruit pouches.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Removed Event Points Calculator Section -->
+
+        <!-- Placeholder divs for event group sections - these will be dynamically generated by JavaScript -->
+        <div id="sprinters"></div>
+        <div id="jumpers"></div>
+        <div id="hurdlers"></div>
+        <div id="distance"></div>
+        <div id="throwers"></div>
+
+    </main>
+
+    <script>
+        // Data for event groups (Sprinters, Jumpers, Distance, Throwers)
+        const eventGroups = {
+            sprinters: {
+                id: 'sprinters',
+                title: '⚡ Sprinters Development Plan',
+                description: 'This plan focuses on developing top-end speed, acceleration, and speed endurance through a phased program, offering both bodyweight and weights options.',
+                currentRegimen: 'bodyweight', // Default regimen
+                phases: [
+                    { name: 'Off-Season (Base Building)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> General fitness & mechanics. <strong>Workout:</strong> Tempo Runs: 6x200m @ 70% effort, 1-2 min recovery. Dynamic Drills.',
+                          tuesday: '<strong>Focus:</strong> General strength & core. <strong>Workout:</strong> Bodyweight Circuit: 3 sets of Squats (15-20 reps), Lunges (10-12/leg), Push-ups (max reps), Plank (60s).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 30-40 min jog. Extensive dynamic & static stretching, foam rolling.',
+                          thursday: '<strong>Focus:</strong> Resistance & speed. <strong>Workout:</strong> Resistance Sprints (e.g., parachute, partner resistance): 8x40m, full recovery. Running Drills.',
+                          friday: '<strong>Focus:</strong> General fitness & core. <strong>Workout:</strong> Bodyweight Circuit: 3 sets of Glute Bridges (15-20 reps), Burpees (10-15 reps), Side Planks (30s/side), Leg Raises (15-20 reps).',
+                          videos: [
+                              { title: 'Tempo Run Basics', url: 'https://www.youtube.com/watch?v=J9c25eJ8h7Y' },
+                              { title: 'Dynamic Warm-up for Sprinters', url: 'https://www.youtube.com/watch?v=2v-p5L_o_0w' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> General strength & hypertrophy. <strong>Workout:</strong> Barbell Squats (3x8-10), Bench Press (3x8-10), Barbell Rows (3x8-10).',
+                          tuesday: '<strong>Focus:</strong> Explosive strength. <strong>Workout:</strong> Power Cleans (3x3-5), Box Jumps (3x5), Medicine Ball Throws (various, 3x8-10).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 30-40 min jog. Extensive dynamic & static stretching, foam rolling.',
+                          thursday: '<strong>Focus:</strong> Strength & stability. <strong>Workout:</strong> Romanian Deadlifts (3x8-10), Overhead Press (3x8-10), Pull-ups/Lat Pulldowns (3x8-12).',
+                          friday: '<strong>Focus:</strong> Core & accessory. <strong>Workout:</strong> Weighted Planks (3x30-60s), Russian Twists (3x15-20/side), Calf Raises (3x15-20).',
+                          videos: [
+                              { title: 'Barbell Squat Form', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Power Clean Technique', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' }
+                          ]
+                      }
+                    },
+                    { name: 'Pre-Season (Speed Intro)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Acceleration. <strong>Workout:</strong> Acceleration: 5x30m from standing start, full recovery. A-Skips, B-Skips.',
+                          tuesday: '<strong>Focus:</strong> Plyometrics & general strength. <strong>Workout:</strong> Plyometrics: Box Jumps (3x5), Broad Jumps (3x5). Bodyweight Circuit (upper body/core focus).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light running drills.',
+                          thursday: '<strong>Focus:</strong> Max velocity. <strong>Workout:</strong> Max Velocity: 4x60m flying sprints, full recovery. C-Skips, Fast Leg drills.',
+                          friday: '<strong>Focus:</strong> Speed endurance intro. <strong>Workout:</strong> Tempo Runs: 4x150m @ 80% effort, 3-4 min recovery. Core circuit.',
+                          videos: [
+                              { title: 'Acceleration Drills', url: 'https://www.youtube.com/watch?v=0k7b5_Q5w0A' },
+                              { title: 'Max Velocity Running Form', url: 'https://www.youtube.com/watch?v=2v-p5L_o_0w' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power & acceleration. <strong>Workout:</strong> Power Cleans (4x3-5), Jump Squats (3x5-8), Weighted Sled Pushes (3x15-20m).',
+                          tuesday: '<strong>Focus:</strong> Strength & stability. <strong>Workout:</strong> Back Squats (3x5-8), Bench Press (3x5-8), Single-leg RDLs (3x8-10/leg).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light running drills.',
+                          thursday: '<strong>Focus:</strong> Explosive power. <strong>Workout:</strong> Hang Snatches (3x3-5), Depth Jumps (3x4-6), Overhead Med Ball Throws (3x8-10).',
+                          friday: '<strong>Focus:</strong> Core & accessory. <strong>Workout:</strong> Weighted Planks (3x45-60s), Cable Rotations (3x10-12/side), Calf Raises (3x15-20).',
+                          videos: [
+                              { title: 'Weighted Sled Push Technique', url: 'https://www.youtube.com/watch?v=Q-9c7F6w11E' },
+                              { title: 'Hang Snatch Tutorial', url: 'https://www.youtube.com/watch?v=Pj1_Nq_xQn0' }
+                          ]
+                      }
+                    },
+                    { name: 'In-Season (Competition)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Race-specific speed. <strong>Workout:</strong> Block Starts: 6-8 reps x 30m. Flying 30s (2-3 reps).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Speed endurance. <strong>Workout:</strong> Speed Endurance: 2x150m @ 95% effort, full recovery. Short accelerations (4x40m).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Light drills, 2-3 short accelerations (20m). Visualization.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Track Block Start Technique', url: 'https://www.youtube.com/watch?v=LqjJ6U1eY7k' },
+                              { title: 'Flying 30s Drill', url: 'https://www.youtube.com/watch?v=LqjJ6U1eY7k' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power maintenance. <strong>Workout:</strong> Hang Cleans (3x2-3), Box Jumps (3x3-5), Med Ball Slams (3x6-8).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Strength maintenance. <strong>Workout:</strong> Front Squats (2x5), RDLs (2x6-8), Push Press (2x5).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Very light Goblet Squats (1x5), Plyometric Push-ups (1x5). Dynamic stretching.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Hang Clean Refinement', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' },
+                              { title: 'Box Jump Progression', url: 'https://www.youtube.com/watch?v=63s_p_Ay6eQ' }
+                          ]
+                      }
+                    },
+                    { name: 'Championship (Peak)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Sharpness & activation. <strong>Workout:</strong> 2-3x30m @ 100% effort, full recovery. Dynamic Drills.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 2-3 short accelerations (20m). Visualization.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Pre-Race Activation Drills', url: 'https://www.youtube.com/watch?v=LqjJ6U1eY7k' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Neural activation. <strong>Workout:</strong> Very light Power Cleans (1x2), 1 set of 3 bodyweight Box Jumps. Dynamic stretching.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 1 set of 5 light Goblet Squats. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Light Activation for Competition', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' }
+                          ]
+                      }
+                    }
+                ]
+            },
+            jumpers: {
+                id: 'jumpers',
+                title: '🤸‍♀️ Jumpers Development Plan',
+                description: 'This plan is designed to improve explosive power, approach consistency, and in-air mechanics for long, triple, and high jumpers, with both bodyweight and weights options.',
+                currentRegimen: 'bodyweight', // Default regimen
+                 phases: [
+                    { name: 'Off-Season (Power Base)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Foundational lower body strength. <strong>Workout:</strong> Bodyweight Squats (3x15-20), Walking Lunges (3x10-12/leg), Glute Bridges (3x15-20).',
+                          tuesday: '<strong>Focus:</strong> Core stability & mobility. <strong>Workout:</strong> Planks (3x60s), Side Planks (3x30s/side), Bird-Dog (3x10/side). Dynamic stretching.',
+                          wednesday: '<strong>Focus:</strong> General conditioning. <strong>Workout:</strong> Easy 30-45 min jog or cross-training (e.g., swimming, cycling if available). Extensive stretching.',
+                          thursday: '<strong>Focus:</strong> Single-leg strength & basic bounding. <strong>Workout:</strong> Pistol Squat progressions (3x8-12/leg), Single-Leg Calf Raises (3x15-20/leg). Easy Bounding (3x30m).',
+                          friday: '<strong>Focus:</strong> Full body & core. <strong>Workout:</strong> Burpees (3x10-15), Pike Push-ups (3x10-15), Russian Twists (3x15-20/side).',
+                          videos: [
+                              { title: 'Bodyweight Squat Variations', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Core Stability for Jumpers', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Absolute lower body strength. <strong>Workout:</strong> Back Squats (3x6-8), Romanian Deadlifts (3x8-10), Weighted Calf Raises (3x10-15).',
+                          tuesday: '<strong>Focus:</strong> Upper body & core. <strong>Workout:</strong> Bench Press (3x8-10), Overhead Press (3x8-10), Weighted Planks (3x45-60s).',
+                          wednesday: '<strong>Focus:</strong> General conditioning. <strong>Workout:</strong> Easy 30-45 min jog or cross-training (e.g., swimming, cycling if available). Extensive stretching.',
+                          thursday: '<strong>Focus:</strong> Compound lifts & accessory. <strong>Workout:</strong> Deadlifts (3x5), Weighted Lunges (3x8-10/leg), Good Mornings (3x10-12).',
+                          friday: '<strong>Focus:</strong> Power & core. <strong>Workout:</strong> Hang Cleans (3x5), Med Ball Slams (3x8-10), Pallof Press (3x10-12/side).',
+                          videos: [
+                              { title: 'Deadlift Form', url: 'https://www.youtube.com/watch?v=ytQo-m02s8c' },
+                              { title: 'Med Ball Slams for Power', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    },
+                    { name: 'Pre-Season (Explosiveness)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Plyometrics. <strong>Workout:</strong> Depth Jumps (3x5), Hurdle Hops (3x6), Broad Jumps (3x5).',
+                          tuesday: '<strong>Focus:</strong> Approach work & core. <strong>Workout:</strong> 5-7 step approach drills (5-8 reps). Leg Raises (3x15-20), Side Planks (3x30s/side).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light drills.',
+                          thursday: '<strong>Focus:</strong> Bounding & power. <strong>Workout:</strong> Bounding Series (single-leg, double-leg for 30-50m). Explosive step-ups (3x8-10/leg).',
+                          friday: '<strong>Focus:</strong> General strength. <strong>Workout:</strong> Bulgarian Split Squats (3x8-12/leg), Glute Bridges (3x15-20), Push-ups (3x max).',
+                          videos: [
+                              { title: 'Depth Jump Progression', url: 'https://www.youtube.com/watch?v=63s_p_Ay6eQ' },
+                              { title: 'Long Jump Approach Drills', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power development. <strong>Workout:</strong> Power Snatches (3x3-5), Box Squats (3x5-8), Weighted Box Jumps (3x3-5).',
+                          tuesday: '<strong>Focus:</strong> Strength & stability. <strong>Workout:</strong> Front Squats (3x5-8), Push Jerks (3x5), Single-leg RDLs (3x8-10/leg).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light drills.',
+                          thursday: '<strong>Focus:</strong> Explosive power. <strong>Workout:</strong> Hang Snatches (3x3-5), Depth Jumps (3x4-6), Overhead Med Ball Throws (3x8-10).',
+                          friday: '<strong>Focus:</strong> Core & accessory. <strong>Workout:</strong> Weighted Russian Twists (3x15-20/side), Cable Pull-throughs (3x10-12), Calf Raises (3x15-20).',
+                          videos: [
+                              { title: 'Power Snatch Technique', url: 'https://www.youtube.com/watch?v=Pj1_Nq_xQn0' },
+                              { title: 'Weighted Box Jumps', url: 'https://www.youtube.com/watch?v=63s_p_Ay6eQ' }
+                          ]
+                      }
+                    },
+                    { name: 'In-Season (Technique)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Full approach & takeoff. <strong>Workout:</strong> Full Approach Jumps (simulated, 4-6 reps). Pop-up Drills (3x5).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Light plyometrics & drills. <strong>Workout:</strong> Hurdle Hops (2x5), Short approach drills (5-7 reps). Core circuit.',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Light bounding (3x20m). Visualization. Dynamic stretching.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Long Jump Takeoff Drills', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' },
+                              { title: 'High Jump Approach & Clearance', url: 'https://www.youtube.com/watch?v=k3d_F60_r_Q' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Strength maintenance. <strong>Workout:</strong> Front Squats (2x5), Single-leg RDLs (2x6-8/leg), Glute-Ham Raises (3x8-12).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Power maintenance. <strong>Workout:</strong> Hang Snatches (2x3), Box Jumps (2x4-6), Med Ball Slams (2x6-8).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Very light Goblet Squats (1x5), Plyometric Push-ups (1x5). Dynamic stretching.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Front Squat for Jumpers', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Plyometric Push-up Variations', url: 'https://www.youtube.com/watch?v=kDBcCt3Nq8g' }
+                          ]
+                      }
+                    },
+                    { name: 'Championship (Peak)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Max power & technique. <strong>Workout:</strong> 2-3 high-quality jump attempts (simulated). Short bounding (2x20m).',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 2-3 short approach jumps (very light). Visualization.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Competition Day Activation', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Neural activation. <strong>Workout:</strong> Very light Power Cleans (1x2), 1 set of 3 bodyweight Box Jumps. Dynamic stretching.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 1 set of 5 light Goblet Squats. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Neural Priming for Max Jumps', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' }
+                          ]
+                      }
+                    }
+                ]
+            },
+            hurdlers: { // New Hurdlers category
+                id: 'hurdlers',
+                title: '🚧 Hurdlers Development Plan',
+                description: 'This plan focuses on developing specific strength, flexibility, and technical proficiency for hurdlers, with both bodyweight and weights options.',
+                currentRegimen: 'bodyweight', // Default regimen
+                phases: [
+                    { name: 'Off-Season (Foundation & Mobility)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> General strength & hurdle mobility. <strong>Workout:</strong> Hurdle Walkovers (lead & trail leg, 3x10/leg). Bodyweight Squats (3x15-20), Lunges (3x10-12/leg).',
+                          tuesday: '<strong>Focus:</strong> Core & flexibility. <strong>Workout:</strong> Planks (3x60s), Side Planks (3x30s/side), Leg Swings (forward/sideways, 3x15/leg). Extensive static stretching (hamstrings, hip flexors).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & general conditioning. <strong>Workout:</strong> Easy 30-40 min jog or cross-training. Dynamic stretching, foam rolling.',
+                          thursday: '<strong>Focus:</strong> Single-leg strength & balance. <strong>Workout:</strong> Pistol Squat progressions (3x8-12/leg), Glute Bridges (3x15-20). Balance drills (single-leg stands).',
+                          friday: '<strong>Focus:</strong> Full body & hurdle drills. <strong>Workout:</strong> Burpees (3x10-15), Push-ups (3x max). Hurdle Drills (lead leg over, trail leg over, 3x10/leg).',
+                          videos: [
+                              { title: 'Hurdle Walkovers', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' },
+                              { title: 'Hurdle Mobility Drills', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Foundational strength. <strong>Workout:</strong> Back Squats (3x8-10), Romanian Deadlifts (3x8-10), Bench Press (3x8-10).',
+                          tuesday: '<strong>Focus:</strong> Core & accessory. <strong>Workout:</strong> Weighted Planks (3x30-60s), Cable Rotations (3x10-12/side), Leg Press (3x10-12).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & general conditioning. <strong>Workout:</strong> Easy 30-40 min jog or cross-training. Dynamic stretching, foam rolling.',
+                          thursday: '<strong>Focus:</strong> Posterior chain & overhead. <strong>Workout:</strong> Deadlifts (3x5), Good Mornings (3x10-12), Overhead Press (3x8-10).',
+                          friday: '<strong>Focus:</strong> Explosive accessory. <strong>Workout:</strong> Kettlebell Swings (3x15-20), Farmers Walks (3x30-40m), Calf Raises (3x15-20).',
+                          videos: [
+                              { title: 'Romanian Deadlift Form', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Kettlebell Swing Basics', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    },
+                    { name: 'Pre-Season (Rhythm & Power Intro)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Hurdle rhythm & short speed. <strong>Workout:</strong> 3-step rhythm drills over 3-5 low hurdles (4-6 reps). Acceleration: 4x30m from standing start.',
+                          tuesday: '<strong>Focus:</strong> Plyometrics & hurdle mobility. <strong>Workout:</strong> Box Jumps (3x5), Broad Jumps (3x5). Hurdle Trail Leg Drill (3x10/leg).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light running drills.',
+                          thursday: '<strong>Focus:</strong> Hurdle technique & speed endurance. <strong>Workout:</strong> Lead Leg Drill (3x10/leg). Tempo Runs: 4x150m @ 80% effort.',
+                          friday: '<strong>Focus:</strong> General strength & core. <strong>Workout:</strong> Burpee Broad Jumps (3x8-10), Side Planks (3x30s/side), Russian Twists (3x15-20/side).',
+                          videos: [
+                              { title: '3-Step Hurdle Rhythm Drill', url: 'https://www.youtube.com/watch?v=oD_A-3h_fJ4' },
+                              { title: 'Hurdle Lead Leg Drill', url: 'https://www.youtube.com/watch?v=Qh_QC_82-aA' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power & acceleration. <strong>Workout:</strong> Power Cleans (4x3-5), Jump Squats (3x5-8), Weighted Sled Pushes (3x15-20m).',
+                          tuesday: '<strong>Focus:</strong> Strength & stability. <strong>Workout:</strong> Front Squats (3x5-8), Split Squats (3x8-10/leg), Glute-Ham Raises (3x8-12).',
+                          wednesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Easy 20-30 min jog. Dynamic stretching, light running drills.',
+                          thursday: '<strong>Focus:</strong> Explosive strength. <strong>Workout:</strong> Hang Snatches (3x3-5), Depth Jumps (3x4-6), Med Ball Overhead Throws (3x8-10).',
+                          friday: '<strong>Focus:</strong> Core & accessory. <strong>Workout:</strong> Pallof Press (3x10-12/side), Cable Pull-throughs (3x10-12), Calf Raises (3x15-20).',
+                          videos: [
+                              { title: 'Split Squat Variations', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Med Ball Overhead Throws', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    },
+                    { name: 'In-Season (Competition & Specificity)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Race-specific hurdle work. <strong>Workout:</strong> Full hurdle clearances (3-5 hurdles, 4-6 reps). Block Starts (3-4 reps, focus on first hurdle).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Speed & rhythm. <strong>Workout:</strong> Short speed work (3x40m flying). Hurdle rhythm drills (over low hurdles, 4-6 reps).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Light hurdle walkovers (2-3 reps). 2-3 short accelerations (20m). Visualization.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Full Hurdle Clearance Drills', url: 'https://www.youtube.com/watch?v=oD_A-3h_fJ4' },
+                              { title: 'Hurdle Start Drills', url: 'https://www.youtube.com/watch?v=LqjJ6U1eY7k' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power maintenance. <strong>Workout:</strong> Light Power Cleans (2x3), Box Jumps (2x4-6), Med Ball Slams (2x6-8).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Strength maintenance. <strong>Workout:</strong> Front Squats (2x5), Single-leg RDLs (2x6-8/leg), Push Press (2x5).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Very light Goblet Squats (1x5), Plyometric Push-ups (1x5). Dynamic stretching.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Light Power Cleans for Hurdlers', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' }
+                          ]
+                      }
+                    },
+                    { name: 'Championship (Peak)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Sharpness & technique. <strong>Workout:</strong> 2-3 full hurdle clearances (perfect form, full recovery). Dynamic Drills.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 2-3 light hurdle walkovers. 2-3 short accelerations (20m). Visualization.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Competition Hurdle Drills', url: 'https://www.youtube.com/watch?v=oD_A-3h_fJ4' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Neural activation. <strong>Workout:</strong> Very light Power Cleans (1x2), 1 set of 3 bodyweight Box Jumps. Dynamic stretching.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 1 set of 5 light Goblet Squats. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Hurdler Pre-Meet Warm-up', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      }
+                    }
+                ]
+            },
+            distance: {
+                id: 'distance',
+                title: '🏃‍♀️ Distance Development Plan',
+                description: 'A comprehensive plan for 800m, 1600m, and 3200m runners, focusing on aerobic capacity, lactate threshold, and race finishing speed, with both bodyweight and weights options.',
+                currentRegimen: 'bodyweight', // Default regimen
+                phases: [
+                    { name: 'Off-Season (Aerobic Base)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Long Slow Distance (LSD). <strong>Workout:</strong> 60-90 min easy run. Core Circuit: Planks, Side Planks, Leg Raises (3x60s).',
+                          tuesday: '<strong>Focus:</strong> General strength & drills. <strong>Workout:</strong> Bodyweight Circuit: 3 sets of Squats (15-20), Lunges (10-12/leg), Push-ups (max). Running Drills.',
+                          wednesday: '<strong>Focus:</strong> Moderate run. <strong>Workout:</strong> 45-60 min easy run.',
+                          thursday: '<strong>Focus:</strong> Strength & form. <strong>Workout:</strong> Stair Repeats (stadium bleachers or similar): 8-10 x 30-50 steps uphill, walk down recovery. Running Drills.',
+                          friday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> 30-40 min easy run. Extensive stretching & foam rolling.',
+                          videos: [
+                              { title: 'Proper Running Form', url: 'https://www.youtube.com/watch?v=kDBcCt3Nq8g' },
+                              { title: 'Long Run Hydration & Fueling', url: 'https://www.youtube.com/watch?v=s3Qc3xYy2s8' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> General strength & endurance. <strong>Workout:</strong> Goblet Squats (3x10-15), Dumbbell Lunges (3x10-12/leg), Glute Bridges (3x15-20).',
+                          tuesday: '<strong>Focus:</strong> Core & upper body. <strong>Workout:</strong> Plank variations (3x60s), Push-ups (3x10-15), Dumbbell Rows (3x10-12).',
+                          wednesday: '<strong>Focus:</strong> Moderate run. <strong>Workout:</strong> 45-60 min easy run.',
+                          thursday: '<strong>Focus:</strong> Full body compound. <strong>Workout:</strong> Deadlifts (3x5-8), Overhead Press (3x8-10), Farmer\'s Walks (3x30-40m).',
+                          friday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> 30-40 min easy run. Extensive stretching & foam rolling.',
+                          videos: [
+                              { title: 'Goblet Squat Tutorial', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Farmer\'s Walk Benefits', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      }
+                    },
+                    { name: 'Pre-Season (Intensity Intro)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Tempo run. <strong>Workout:</strong> 20-25 min Tempo Run (comfortably hard pace). Running Drills.',
+                          tuesday: '<strong>Focus:</strong> Strength endurance. <strong>Workout:</strong> Bodyweight Circuit: 3 sets of Jump Squats (10-15), Burpees (10-12), Mountain Climbers (30-45s), Russian Twists (15-20/side).',
+                          wednesday: '<strong>Focus:</strong> Moderate run. <strong>Workout:</strong> 40-50 min easy run with 6-8x100m strides at end.',
+                          thursday: '<strong>Focus:</strong> Fartlek & accelerations. <strong>Workout:</strong> 30-45 min Fartlek (e.g., 2 min fast/2 min easy). Bounding drills (6x60m).',
+                          friday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> 30 min easy run. Extensive stretching & foam rolling.',
+                          videos: [
+                              { title: 'Tempo Run Strategy', url: 'https://www.youtube.com/watch?v=J9c25eJ8h7Y' },
+                              { title: 'Fartlek Training Explained', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Threshold & power. <strong>Workout:</strong> 20-25 min Tempo Run. Kettlebell Swings (3x15-20), Box Jumps (3x5-8).',
+                          tuesday: '<strong>Focus:</strong> Strength endurance. <strong>Workout:</strong> Single-Leg RDLs (3x8-10/leg), Step-ups with weight (3x10-12/leg), Russian Twists (3x15-20/side).',
+                          wednesday: '<strong>Focus:</strong> Moderate run. <strong>Workout:</strong> 40-50 min easy run with 6-8x100m strides at end.',
+                          thursday: '<strong>Focus:</strong> Speed & strength. <strong>Workout:</strong> 30-45 min Fartlek. Power Cleans (3x3-5), Push Press (3x5-8).',
+                          friday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> 30 min easy run. Extensive stretching & foam rolling.',
+                          videos: [
+                              { title: 'Kettlebell Swings for Runners', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' },
+                              { title: 'Single Leg RDL for Stability', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' }
+                          ]
+                      }
+                    },
+                    { name: 'In-Season (Race Pace)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Race pace intervals. <strong>Workout:</strong> 8x400m at mile pace (200m jog recovery). Running Drills.',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20-30 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Shorter tempo. <strong>Workout:</strong> 15-20 min Tempo Run (threshold pace). Core circuit.',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 20-30 min easy run with 4-6x100m strides. Visualization.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: '400m Intervals for Distance', url: 'https://www.youtube.com/watch?v=J9c25eJ8h7Y' },
+                              { title: 'Threshold Running Explained', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Race pace intervals. <strong>Workout:</strong> 8x400m at mile pace (200m jog recovery). Bodyweight Squats (2x15-20).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20-30 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Strength maintenance. <strong>Workout:</strong> Lunges (2x10-12/leg), Glute Bridges (2x15-20). Core circuit (planks, leg raises).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 20-30 min easy run with 4-6x100m strides. Very light Goblet Squats (1x5).',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Strength for Distance Runners', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' }
+                          ]
+                      }
+                    },
+                    { name: 'Championship (Peak)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Sharpening speed. <strong>Workout:</strong> 4x200m at 800m race pace (long recovery). Reduced mileage easy run.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15-20 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 15 min easy run with 4x100m strides. Visualization.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Tapering for Distance Races', url: 'https://www.youtube.com/watch?v=J9c25eJ8h7Y' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Light activation. <strong>Workout:</strong> Reduced mileage easy run. Very light bodyweight circuit (1x10 squats, 10 push-ups).',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15-20 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 15 min easy run with 4x100m strides. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Pre-Race Warm-up for Runners', url: 'https://www.youtube.com/watch?v=Z2n58m2i4yk' }
+                          ]
+                      }
+                    }
+                ]
+            },
+            throwers: {
+                id: 'throwers',
+                title: '🏋️‍♂️ Throwers Development Plan',
+                description: 'This plan focuses on developing explosive, full-body power, rotational strength, and technical proficiency for shot put and discus, with both bodyweight and weights options.',
+                currentRegimen: 'bodyweight', // Default regimen
+                 phases: [
+                    { name: 'Off-Season (Strength Base)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Full body strength. <strong>Workout:</strong> Bodyweight Squats (3x15-20), Push-ups (3x max), Burpees (3x10-15).',
+                          tuesday: '<strong>Focus:</strong> Core & rotational mobility. <strong>Workout:</strong> Planks (3x60s), Side Planks (3x30s/side), Standing Rotational Punches (3x10-12/side).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & general conditioning. <strong>Workout:</strong> 30-40 min easy jog or cross-training. Extensive stretching & mobility.',
+                          thursday: '<strong>Focus:</strong> Lower body & shoulder strength. <strong>Workout:</strong> Walking Lunges (3x10-12/leg), Pike Push-ups (3x10-15), Glute Bridges (3x15-20).',
+                          friday: '<strong>Focus:</strong> Full body circuit & shadow throws. <strong>Workout:</strong> Circuit: Jump Squats (3x10), Mountain Climbers (3x30s), Superman (3x15). Shadow Throws (focus on form).',
+                          videos: [
+                              { title: 'Bodyweight Exercises for Throwers', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Rotational Core Drills', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Maximal strength. <strong>Workout:</strong> Back Squats (4x5-8), Bench Press (4x5-8), Barbell Rows (3x8-10).',
+                          tuesday: '<strong>Focus:</strong> Explosive power & core. <strong>Workout:</strong> Power Cleans (4x3-5), Medicine Ball Slams (3x8-10), Weighted Russian Twists (3x15-20/side).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & general conditioning. <strong>Workout:</strong> 30-40 min easy jog or cross-training. Extensive stretching & mobility.',
+                          thursday: '<strong>Focus:</strong> Strength & stability. <strong>Workout:</strong> Deadlifts (3x3-5), Overhead Press (3x6-8), Weighted Lunges (3x8-10/leg).',
+                          friday: '<strong>Focus:</strong> Accessory & mobility. <strong>Workout:</strong> Face Pulls (3x12-15), Calf Raises (3x15-20), Foam rolling and dynamic mobility drills.',
+                          videos: [
+                              { title: 'Bench Press Form', url: 'https://www.youtube.com/watch?v=ultWtkfB6vQ' },
+                              { title: 'Medicine Ball Slams for Power', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    },
+                    { name: 'Pre-Season (Power Development)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Explosive lower body. <strong>Workout:</strong> Jump Squats (3x8-12), Broad Jumps (3x5), Plyometric Push-ups (3x5-8).',
+                          tuesday: '<strong>Focus:</strong> Rotational power & core. <strong>Workout:</strong> Standing Rotational Punches (explosive, 3x10-12/side), Twisting Lunges (3x10-12/side). Plank variations.',
+                          wednesday: '<strong>Focus:</strong> Active recovery & drills. <strong>Workout:</strong> 20-30 min easy jog. Specific footwork drills (no implement).',
+                          thursday: '<strong>Focus:</strong> Full body power. <strong>Workout:</strong> Burpee Broad Jumps (3x8-10), Explosive Step-ups (3x8-10/leg). Shadow Throws (speed focus).',
+                          friday: '<strong>Focus:</strong> General strength & mobility. <strong>Workout:</strong> Bodyweight Squats (3x15-20), Push-ups (3x max). Extensive dynamic stretching.',
+                          videos: [
+                              { title: 'Jump Squat Technique', url: 'https://www.youtube.com/watch?v=63s_p_Ay6eQ' },
+                              { title: 'Plyometric Push-ups', url: 'https://www.youtube.com/watch?v=kDBcCt3Nq8g' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power & speed-strength. <strong>Workout:</strong> Power Cleans (4x3-5), Push Jerks (3x5), Med Ball Rotational Throws (3x8-10/side).',
+                          tuesday: '<strong>Focus:</strong> Strength & accessory. <strong>Workout:</strong> Front Squats (3x5-8), Bench Press (3x5-8), Pull-ups/Lat Pulldowns (3x8-12).',
+                          wednesday: '<strong>Focus:</strong> Active recovery & drills. <strong>Workout:</strong> 20-30 min easy jog. Specific footwork drills (no implement).',
+                          thursday: '<strong>Focus:</strong> Explosive pulling & overhead. <strong>Workout:</strong> Snatch Pulls (3x3-5), Overhead Squats (3x5-8), Kettlebell Swings (3x15-20).',
+                          friday: '<strong>Focus:</strong> Core & mobility. <strong>Workout:</strong> Pallof Press (3x10-12/side), Cable Chops (3x10-12/side). Foam rolling, dynamic mobility.',
+                          videos: [
+                              { title: 'Push Jerk Technique', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' },
+                              { title: 'Med Ball Rotational Throws', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    },
+                    { name: 'In-Season (Technique & Speed)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> High-intensity drills & power. <strong>Workout:</strong> Explosive Jump Squats (3x5), High-intensity shadow throws (5-7 reps, perfect form).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Speed in circle & core. <strong>Workout:</strong> Specific footwork drills (quickness focus). Rotational core circuit (3 sets, 10-15 reps).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Light shadow throws (3-5 reps). Dynamic stretching. Visualization.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Shot Put Glide Technique', url: 'https://www.youtube.com/watch?v=oD_A-3h_fJ4' },
+                              { title: 'Discus Throwing Drills', url: 'https://www.youtube.com/watch?v=Qh_QC_82-aA' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Power maintenance. <strong>Workout:</strong> Light Power Cleans (2x3), Box Jumps (2x4-6), Med Ball Slams (2x6-8).',
+                          tuesday: '<strong>Focus:</strong> Active recovery & mobility. <strong>Workout:</strong> Easy 20 min jog. Extensive dynamic & static stretching. Foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Strength maintenance. <strong>Workout:</strong> Light Squats (2x5), RDLs (2x6-8), Push Press (2x5).',
+                          thursday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> Very light Hang Snatches (1x2), 1 set of 3 bodyweight Plyo Push-ups. Dynamic stretching.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest or very light stretching.',
+                          videos: [
+                              { title: 'Power Maintenance for Throwers', url: 'https://www.youtube.com/watch?v=bQ1uJ7fJ910' }
+                          ]
+                      }
+                    },
+                    { name: 'Championship (Peak)',
+                      bodyweight: {
+                          monday: '<strong>Focus:</strong> Explosive sharpness. <strong>Workout:</strong> 3-5 high-quality shadow throws (max speed). 2-3 explosive broad jumps.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 2-3 light shadow throws. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Competition Day Throwing Drills', url: 'https://www.youtube.com/watch?v=oD_A-3h_fJ4' }
+                          ]
+                      },
+                      weights: {
+                          monday: '<strong>Focus:</strong> Neural activation. <strong>Workout:</strong> Very light Power Cleans (1x2), 1 set of 3 bodyweight Box Jumps. Dynamic stretching.',
+                          tuesday: '<strong>Focus:</strong> Active recovery. <strong>Workout:</strong> Light jog 15 min. Extensive stretching & foam rolling.',
+                          wednesday: '<strong>Focus:</strong> Pre-meet activation. <strong>Workout:</strong> 1 set of 3 very light Med Ball Slams. Dynamic stretching.',
+                          thursday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          friday: '<strong>Focus:</strong> Rest. <strong>Workout:</strong> Complete rest.',
+                          videos: [
+                              { title: 'Thrower Pre-Meet Activation', url: 'https://www.youtube.com/watch?v=y3X_iRqZz9M' }
+                          ]
+                      }
+                    }
+                ]
+            }
+        };
+
+        // Function to generate event group sections dynamically
+        function generateEventGroupSections() {
+            const mainContent = document.getElementById('main-content');
+            // Remove existing event group sections before regenerating
+            document.querySelectorAll('.event-group-section').forEach(section => section.remove());
+
+            // Define the order of sections
+            const sectionOrder = ['sprinters', 'jumpers', 'hurdlers', 'distance', 'throwers'];
+
+            sectionOrder.forEach(key => {
+                const group = eventGroups[key];
+                const section = document.createElement('section');
+                section.id = group.id;
+                section.className = 'mb-12 event-group-section'; // Added a class for easier removal
+                section.innerHTML = `
+                    <h2 class="text-4xl font-bold mb-2 text-[#6A0DAD]">${group.title}</h2>
+                    <p class="text-lg text-gray-400 mb-6">${group.description}</p>
+                    <div class="phase-card rounded-xl p-6">
+                        <div class="tabs border-b border-gray-700 mb-6">
+                            ${group.phases.map((phase, index) => `
+                                <button class="tab ${index === 0 ? 'active' : ''} py-2 px-4" onclick="showPhase('${group.id}', ${index}, this)">${phase.name}</button>
+                            `).join('')}
+                        </div>
+                        <div class="regimen-toggle mb-6 flex justify-center space-x-4">
+                            <button class="regimen-toggle-btn ${group.currentRegimen === 'bodyweight' ? 'active' : ''} py-2 px-4 rounded-full" onclick="toggleRegimen('${group.id}', 'bodyweight', this)">Bodyweight</button>
+                            <button class="regimen-toggle-btn ${group.currentRegimen === 'weights' ? 'active' : ''} py-2 px-4 rounded-full" onclick="toggleRegimen('${group.id}', 'weights', this)">Weights</button>
+                        </div>
+                        <div id="${group.id}-phase-content-container">
+                            <!-- Daily workouts will be rendered here -->
+                        </div>
+                    </div>
+                `;
+                // Append sections in the defined order
+                const lastSectionId = sectionOrder[sectionOrder.indexOf(key) - 1];
+                if (lastSectionId) {
+                    document.getElementById(lastSectionId).after(section);
+                } else {
+                    // For the first event group, append after NCAA Eligibility
+                    document.getElementById('ncaa-eligibility').after(section);
+                }
+            });
+
+            // After generating all sections, ensure the first phase of each group is shown
+            for (const key in eventGroups) {
+                const group = eventGroups[key];
+                const firstTab = document.querySelector(`#${group.id} .tabs .tab`);
+                if (firstTab) {
+                    showPhase(group.id, 0, firstTab);
+                }
+            }
+        }
+
+        // Function to show a specific phase within an event group
+        function showPhase(groupId, phaseIndex, clickedButton) {
+            // Remove active class from all tabs in this group
+            document.querySelectorAll(`#${groupId} .tabs .tab`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to the clicked tab
+            clickedButton.classList.add('active');
+
+            const group = eventGroups[groupId];
+            const currentRegimen = group.currentRegimen;
+            const phase = group.phases[phaseIndex];
+            const workouts = phase[currentRegimen];
+            const videos = workouts.videos || []; // Get videos for the current regimen, default to empty array
+
+            const container = document.getElementById(`${groupId}-phase-content-container`);
+            let workoutsHtml = `<h3 class="text-2xl font-semibold mb-4 text-[#C5B358]">${phase.name} - ${currentRegimen.charAt(0).toUpperCase() + currentRegimen.slice(1)} Workouts</h3>`;
+
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            days.forEach(day => {
+                const workout = workouts[day];
+                if (workout) {
+                    workoutsHtml += `
+                        <div class="mb-4">
+                            <h4 class="text-xl font-medium text-[#C5B358]">${day.charAt(0).toUpperCase() + day.slice(1)}:</h4>
+                            <p class="text-gray-300 ml-4">${workout}</p>
+                        </div>
+                    `;
+                }
+            });
+            workoutsHtml += `<p class="mt-4 text-gray-400"><strong>Saturday & Sunday:</strong> Active recovery, light cross-training, or complete rest. Focus on stretching and foam rolling.</p>`;
+
+            // Add video section if videos exist
+            if (videos.length > 0) {
+                workoutsHtml += `
+                    <div class="mt-8">
+                        <h4 class="text-xl font-medium text-[#C5B358] mb-3">Key Skill Videos:</h4>
+                        <ul class="list-none space-y-2">
+                            ${videos.map(video => `
+                                <li><a href="${video.url}" target="_blank" class="warm-up-link">${video.title}</a></li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = workoutsHtml;
+        }
+
+        // Function to toggle between bodyweight and weights regimens
+        function toggleRegimen(groupId, regimenType, clickedButton) {
+            eventGroups[groupId].currentRegimen = regimenType;
+
+            // Update button active states
+            document.querySelectorAll(`#${groupId} .regimen-toggle-btn`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            clickedButton.classList.add('active');
+
+            // Re-render the content for the currently active phase to reflect the regimen change
+            const activePhaseButton = document.querySelector(`#${groupId} .tabs .tab.active`);
+            if (activePhaseButton) {
+                const phaseIndex = Array.from(activePhaseButton.parentNode.children).indexOf(activePhaseButton);
+                showPhase(groupId, phaseIndex, activePhaseButton); // Re-call showPhase to update content
+            }
+        }
+
+        // Function to show a specific recruiting standard table (D1, D2, D3)
+        function showStandard(divisionId, clickedButton) {
+            // Remove active class from all recruiting standard tabs
+            document.querySelectorAll('#recruiting-standards .tabs .tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to the clicked tab
+            clickedButton.classList.add('active');
+
+            // Hide all standard tables
+            document.querySelectorAll('.standard-table').forEach(table => {
+                table.classList.add('hidden');
+            });
+            // Show the selected standard table
+            document.getElementById(divisionId).classList.remove('hidden');
+        }
+
+        // Function to show a specific nutrition phase
+        function showNutritionPhase(phaseId, clickedButton) {
+            // Remove active class from all nutrition tabs
+            document.querySelectorAll('#nutrition-plan .tabs .tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to the clicked tab
+            clickedButton.classList.add('active');
+
+            // Hide all nutrition content divs
+            document.querySelectorAll('#nutrition-plan .nutrition-content').forEach(div => {
+                div.classList.add('hidden');
+            });
+            // Show the selected nutrition content div
+            document.getElementById(phaseId).classList.remove('hidden');
+        }
+
+        // Initial rendering on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial active nav link
+            const firstNavLink = document.querySelector('.nav-link');
+            if (firstNavLink) {
+                firstNavLink.classList.add('active');
+            }
+
+            // Generate event group sections
+            generateEventGroupSections();
+
+            // Set up scroll listener for active navigation links
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    // Adjust for better trigger point, considering header height if fixed
+                    if (pageYOffset >= sectionTop - sectionHeight / 3) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
